@@ -1511,7 +1511,7 @@ export const Portfolio = ({ darkMode }) => {
               </tr>
             </thead>
             <tbody>
-              {mockPortfolio.holdings.map((holding, index) => {
+              {currentPortfolio.holdings.map((holding, index) => {
                 const gainLoss = holding.value - (holding.shares * holding.avgPrice);
                 const gainLossPercent = (gainLoss / (holding.shares * holding.avgPrice)) * 100;
                 const isPositive = gainLoss >= 0;
@@ -1525,7 +1525,7 @@ export const Portfolio = ({ darkMode }) => {
                     <td className="p-4">
                       <div className="font-bold">{holding.symbol}</div>
                       <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {mockStocks.find(s => s.symbol === holding.symbol)?.name}
+                        {stocks.find(s => s.symbol === holding.symbol)?.name}
                       </div>
                     </td>
                     <td className="p-4 font-medium">{holding.shares}</td>
