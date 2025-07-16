@@ -1582,9 +1582,17 @@ export const Portfolio = ({ darkMode }) => {
 
 // Watchlist Component
 export const Watchlist = ({ darkMode }) => {
-  const [watchlist, setWatchlist] = useState(mockStocks.slice(0, 6));
+  const { stocks, loading, error, refreshStocks } = useStockData();
+  const [watchlist, setWatchlist] = useState(stocks.slice(0, 6));
   const [selectedStock, setSelectedStock] = useState(null);
   const [showStockDetail, setShowStockDetail] = useState(false);
+  
+  // Update watchlist when stocks change
+  useEffect(() => {
+    if (stocks.length > 0) {
+      setWatchlist(stocks.slice(0, 6));
+    }
+  }, [stocks]);
   
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -1599,11 +1607,37 @@ export const Watchlist = ({ darkMode }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Your Watchlist</h2>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2">
-          <Plus size={20} />
-          <span>Add Stock</span>
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={refreshStocks}
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg flex items-center space-x-2 ${
+              loading 
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                : 'bg-green-600 text-white hover:bg-green-700'
+            }`}
+          >
+            <RefreshCw className={loading ? 'animate-spin' : ''} size={16} />
+            <span>Refresh</span>
+          </button>
+          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center space-x-2">
+            <Plus size={20} />
+            <span>Add Stock</span>
+          </button>
+        </div>
       </div>
+      
+      {/* Data Status */}
+      {(loading || error) && (
+        <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center space-x-2">
+            {loading && <RefreshCw className="animate-spin" size={16} />}
+            <span className="text-sm">
+              {loading ? 'Updating watchlist...' : error ? error : 'Watchlist updated'}
+            </span>
+          </div>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {watchlist.map((stock) => (
