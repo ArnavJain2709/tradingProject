@@ -155,7 +155,7 @@ const fetchAllStockData = async () => {
 };
 
 // Mock data for stocks (fallback if API fails)
-const mockStocks = [
+const fallbackMockStocks = [
   {
     symbol: 'AAPL',
     name: 'Apple Inc.',
