@@ -979,8 +979,11 @@ export const StockDetailModal = ({ stock, isOpen, onClose, darkMode }) => {
 
 // Dashboard Component
 export const Dashboard = ({ darkMode }) => {
+  const { stocks, loading, error, lastUpdated, refreshStocks } = useStockData();
   const [selectedStock, setSelectedStock] = useState(null);
   const [showStockDetail, setShowStockDetail] = useState(false);
+  
+  const currentPortfolio = generatePortfolio(stocks);
   
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -991,7 +994,7 @@ export const Dashboard = ({ darkMode }) => {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [{
       label: 'Portfolio Value',
-      data: [42000, 43500, 41200, 44800, 46200, 45789],
+      data: [42000, 43500, 41200, 44800, 46200, currentPortfolio.totalValue],
       borderColor: '#3B82F6',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
@@ -1001,6 +1004,36 @@ export const Dashboard = ({ darkMode }) => {
   
   return (
     <div className="space-y-6">
+      {/* Data Status */}
+      {(loading || error) && (
+        <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {loading && <RefreshCw className="animate-spin" size={16} />}
+              <span className="text-sm">
+                {loading ? 'Updating stock prices...' : error ? error : 'Data updated'}
+              </span>
+              {lastUpdated && (
+                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  (Last updated: {lastUpdated.toLocaleTimeString()})
+                </span>
+              )}
+            </div>
+            <button
+              onClick={refreshStocks}
+              disabled={loading}
+              className={`px-3 py-1 rounded text-sm ${
+                loading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Portfolio Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
@@ -1011,7 +1044,7 @@ export const Dashboard = ({ darkMode }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Value</p>
-              <p className="text-2xl font-bold">${mockPortfolio.totalValue.toLocaleString()}</p>
+              <p className="text-2xl font-bold">${currentPortfolio.totalValue.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
               <DollarSign className="text-blue-600" size={24} />
@@ -1028,8 +1061,8 @@ export const Dashboard = ({ darkMode }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Gain</p>
-              <p className="text-2xl font-bold text-green-600">
-                +${mockPortfolio.totalGain.toLocaleString()}
+              <p className={`text-2xl font-bold ${currentPortfolio.totalGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {currentPortfolio.totalGain >= 0 ? '+' : ''}${currentPortfolio.totalGain.toLocaleString()}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1047,8 +1080,8 @@ export const Dashboard = ({ darkMode }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Day Change</p>
-              <p className="text-2xl font-bold text-green-600">
-                +${mockPortfolio.dayChange.toFixed(2)}
+              <p className={`text-2xl font-bold ${currentPortfolio.dayChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {currentPortfolio.dayChange >= 0 ? '+' : ''}${currentPortfolio.dayChange.toFixed(2)}
               </p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1066,7 +1099,7 @@ export const Dashboard = ({ darkMode }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Holdings</p>
-              <p className="text-2xl font-bold">{mockPortfolio.holdings.length}</p>
+              <p className="text-2xl font-bold">{currentPortfolio.holdings.length}</p>
             </div>
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
               <Briefcase className="text-purple-600" size={24} />
