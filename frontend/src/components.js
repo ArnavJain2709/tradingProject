@@ -573,7 +573,10 @@ const portfolioChartData = {
 
 // Header Component
 export const Header = ({ darkMode, toggleDarkMode, sidebarOpen, setSidebarOpen }) => {
+  const { stocks } = useStockData();
   const [balanceVisible, setBalanceVisible] = useState(true);
+  
+  const currentPortfolio = generatePortfolio(stocks);
   
   return (
     <header className={`sticky top-0 z-50 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-b backdrop-blur-md bg-opacity-95`}>
@@ -596,8 +599,8 @@ export const Header = ({ darkMode, toggleDarkMode, sidebarOpen, setSidebarOpen }
         <div className="flex items-center space-x-4">
           <div className="hidden md:flex items-center space-x-2">
             <span className="text-sm font-medium">Portfolio Value:</span>
-            <span className="text-lg font-bold text-green-600">
-              {balanceVisible ? `$${mockPortfolio.totalValue.toLocaleString()}` : '••••••'}
+            <span className={`text-lg font-bold ${currentPortfolio.totalGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {balanceVisible ? `$${currentPortfolio.totalValue.toLocaleString()}` : '••••••'}
             </span>
             <button
               onClick={() => setBalanceVisible(!balanceVisible)}
