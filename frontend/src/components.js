@@ -461,6 +461,43 @@ const mockPortfolio = {
   ]
 };
 
+// Generate portfolio based on current stock prices
+const generatePortfolio = (stocks) => {
+  const baseHoldings = [
+    { symbol: 'AAPL', shares: 50, avgPrice: 180.50 },
+    { symbol: 'GOOGL', shares: 25, avgPrice: 135.20 },
+    { symbol: 'MSFT', shares: 30, avgPrice: 360.75 },
+    { symbol: 'TSLA', shares: 20, avgPrice: 220.30 },
+    { symbol: 'NVDA', shares: 15, avgPrice: 750.80 }
+  ];
+
+  const holdings = baseHoldings.map(holding => {
+    const stock = stocks.find(s => s.symbol === holding.symbol);
+    const currentPrice = stock ? stock.price : holding.avgPrice;
+    const value = holding.shares * currentPrice;
+    
+    return {
+      ...holding,
+      currentPrice,
+      value
+    };
+  });
+
+  const totalValue = holdings.reduce((sum, holding) => sum + holding.value, 0);
+  const totalCost = holdings.reduce((sum, holding) => sum + (holding.shares * holding.avgPrice), 0);
+  const totalGain = totalValue - totalCost;
+  const totalGainPercent = (totalGain / totalCost) * 100;
+
+  return {
+    totalValue,
+    totalGain,
+    totalGainPercent,
+    dayChange: totalValue * 0.0027, // Simulate 0.27% daily change
+    dayChangePercent: 0.27,
+    holdings
+  };
+};
+
 // Mock news data
 const mockNews = [
   {
