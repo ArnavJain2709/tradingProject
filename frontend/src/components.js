@@ -1181,12 +1181,22 @@ export const Dashboard = ({ darkMode }) => {
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold">Market Overview</h3>
-          <button className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
-            <RefreshCw size={20} />
+          <button 
+            onClick={refreshStocks}
+            disabled={loading}
+            className={`p-2 rounded-lg ${
+              loading 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : darkMode 
+                  ? 'hover:bg-gray-700' 
+                  : 'hover:bg-gray-100'
+            }`}
+          >
+            <RefreshCw className={loading ? 'animate-spin' : ''} size={20} />
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {mockStocks.slice(0, 4).map((stock, index) => (
+          {stocks.slice(0, 4).map((stock, index) => (
             <StockCard
               key={stock.symbol}
               stock={stock}
