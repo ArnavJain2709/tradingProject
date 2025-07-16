@@ -357,7 +357,7 @@ export const Sidebar = ({ darkMode, isOpen, setActiveTab, activeTab }) => {
     { id: 'watchlist', label: 'Watchlist', icon: Eye },
     { id: 'news', label: 'News', icon: BookOpen },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', icon: Settings }
+    { id: 'settings', label: 'Settings', icon: SettingsIcon }
   ];
   
   return (
