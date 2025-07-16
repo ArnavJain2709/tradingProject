@@ -80,7 +80,248 @@ ChartJS.register(
   Filler
 );
 
-// Mock data for stocks
+// Free stock API endpoints (using Alpha Vantage demo key)
+const ALPHA_VANTAGE_API_KEY = 'demo'; // You can get a free key from https://www.alphavantage.co/support/#api-key
+const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
+
+// Fallback API using Yahoo Finance (using a CORS proxy)
+const YAHOO_FINANCE_PROXY = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+
+// Stock symbols we want to track
+const STOCK_SYMBOLS = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA', 'AMZN', 'META', 'NFLX'];
+
+// Function to fetch real stock data from Yahoo Finance
+const fetchRealStockData = async (symbol) => {
+  try {
+    const response = await axios.get(`${YAHOO_FINANCE_PROXY}${symbol}?interval=1d&range=1d`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    const data = response.data;
+    if (data.chart && data.chart.result && data.chart.result[0]) {
+      const result = data.chart.result[0];
+      const meta = result.meta;
+      const quote = result.indicators.quote[0];
+      
+      const currentPrice = meta.regularMarketPrice;
+      const previousClose = meta.previousClose;
+      const change = currentPrice - previousClose;
+      const changePercent = (change / previousClose) * 100;
+      
+      return {
+        symbol: symbol,
+        name: meta.shortName || symbol,
+        price: currentPrice,
+        change: change,
+        changePercent: changePercent,
+        volume: meta.regularMarketVolume,
+        marketCap: meta.marketCap ? `${(meta.marketCap / 1000000000).toFixed(2)}B` : 'N/A',
+        high: meta.regularMarketDayHigh,
+        low: meta.regularMarketDayLow,
+        open: meta.regularMarketDayLow,
+        close: currentPrice,
+        pe: meta.trailingPE || 0,
+        sector: getSectorForSymbol(symbol)
+      };
+    }
+  } catch (error) {
+    console.error(`Error fetching data for ${symbol}:`, error);
+    return null;
+  }
+};
+
+// Function to get sector for a symbol (since API doesn't always provide this)
+const getSectorForSymbol = (symbol) => {
+  const sectors = {
+    'AAPL': 'Technology',
+    'GOOGL': 'Technology',
+    'MSFT': 'Technology',
+    'TSLA': 'Consumer Discretionary',
+    'NVDA': 'Technology',
+    'AMZN': 'Consumer Discretionary',
+    'META': 'Communication Services',
+    'NFLX': 'Communication Services'
+  };
+  return sectors[symbol] || 'Technology';
+};
+
+// Function to fetch all stock data
+const fetchAllStockData = async () => {
+  const promises = STOCK_SYMBOLS.map(symbol => fetchRealStockData(symbol));
+  const results = await Promise.all(promises);
+  return results.filter(result => result !== null);
+};
+
+// Mock data for stocks (fallback if API fails)
+const mockStocks = [
+  {
+    symbol: 'AAPL',
+    name: 'Apple Inc.',
+    price: 193.42,
+    change: 2.87,
+    changePercent: 1.51,
+    volume: 45123456,
+    marketCap: '3.01T',
+    high: 195.23,
+    low: 191.12,
+    open: 192.45,
+    close: 193.42,
+    pe: 31.2,
+    sector: 'Technology'
+  },
+  {
+    symbol: 'GOOGL',
+    name: 'Alphabet Inc.',
+    price: 142.56,
+    change: -1.23,
+    changePercent: -0.85,
+    volume: 32456789,
+    marketCap: '1.78T',
+    high: 144.23,
+    low: 141.34,
+    open: 143.12,
+    close: 142.56,
+    pe: 26.8,
+    sector: 'Technology'
+  },
+  {
+    symbol: 'MSFT',
+    name: 'Microsoft Corp.',
+    price: 378.85,
+    change: 4.12,
+    changePercent: 1.10,
+    volume: 28345678,
+    marketCap: '2.81T',
+    high: 380.45,
+    low: 376.23,
+    open: 377.34,
+    close: 378.85,
+    pe: 35.7,
+    sector: 'Technology'
+  },
+  {
+    symbol: 'TSLA',
+    name: 'Tesla Inc.',
+    price: 248.73,
+    change: -8.45,
+    changePercent: -3.29,
+    volume: 87654321,
+    marketCap: '791B',
+    high: 255.67,
+    low: 246.89,
+    open: 253.45,
+    close: 248.73,
+    pe: 65.4,
+    sector: 'Consumer Discretionary'
+  },
+  {
+    symbol: 'NVDA',
+    name: 'NVIDIA Corp.',
+    price: 873.45,
+    change: 23.67,
+    changePercent: 2.79,
+    volume: 45123987,
+    marketCap: '2.15T',
+    high: 878.90,
+    low: 865.23,
+    open: 868.12,
+    close: 873.45,
+    pe: 72.1,
+    sector: 'Technology'
+  },
+  {
+    symbol: 'AMZN',
+    name: 'Amazon.com Inc.',
+    price: 145.23,
+    change: 1.89,
+    changePercent: 1.32,
+    volume: 31245678,
+    marketCap: '1.51T',
+    high: 146.78,
+    low: 143.45,
+    open: 144.12,
+    close: 145.23,
+    pe: 45.2,
+    sector: 'Consumer Discretionary'
+  },
+  {
+    symbol: 'META',
+    name: 'Meta Platforms Inc.',
+    price: 501.23,
+    change: -7.34,
+    changePercent: -1.44,
+    volume: 19876543,
+    marketCap: '1.27T',
+    high: 508.90,
+    low: 499.45,
+    open: 506.78,
+    close: 501.23,
+    pe: 24.8,
+    sector: 'Communication Services'
+  },
+  {
+    symbol: 'NFLX',
+    name: 'Netflix Inc.',
+    price: 645.78,
+    change: 12.34,
+    changePercent: 1.95,
+    volume: 8765432,
+    marketCap: '287B',
+    high: 648.90,
+    low: 635.45,
+    open: 638.12,
+    close: 645.78,
+    pe: 35.6,
+    sector: 'Communication Services'
+  }
+];
+
+// Global state for stock data
+let globalStockData = mockStocks;
+
+// Hook to fetch and manage real stock data
+const useStockData = () => {
+  const [stocks, setStocks] = useState(mockStocks);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  const fetchStocks = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const realData = await fetchAllStockData();
+      if (realData && realData.length > 0) {
+        setStocks(realData);
+        globalStockData = realData;
+        setLastUpdated(new Date());
+      } else {
+        setStocks(mockStocks);
+        setError('Using mock data - API unavailable');
+      }
+    } catch (err) {
+      console.error('Error fetching stock data:', err);
+      setStocks(mockStocks);
+      setError('Failed to fetch real data, using mock data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStocks();
+    
+    // Refresh data every 5 minutes
+    const interval = setInterval(fetchStocks, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  return { stocks, loading, error, lastUpdated, refreshStocks: fetchStocks };
+};
 const mockStocks = [
   {
     symbol: 'AAPL',
