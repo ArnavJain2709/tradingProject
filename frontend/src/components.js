@@ -279,11 +279,11 @@ const fallbackMockStocks = [
 ];
 
 // Global state for stock data
-let globalStockData = mockStocks;
+let globalStockData = fallbackMockStocks;
 
 // Hook to fetch and manage real stock data
 const useStockData = () => {
-  const [stocks, setStocks] = useState(mockStocks);
+  const [stocks, setStocks] = useState(fallbackMockStocks);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -299,12 +299,12 @@ const useStockData = () => {
         globalStockData = realData;
         setLastUpdated(new Date());
       } else {
-        setStocks(mockStocks);
+        setStocks(fallbackMockStocks);
         setError('Using mock data - API unavailable');
       }
     } catch (err) {
       console.error('Error fetching stock data:', err);
-      setStocks(mockStocks);
+      setStocks(fallbackMockStocks);
       setError('Failed to fetch real data, using mock data');
     } finally {
       setLoading(false);
