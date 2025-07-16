@@ -1400,17 +1400,45 @@ export const Trading = ({ darkMode }) => {
 
 // Portfolio Component
 export const Portfolio = ({ darkMode }) => {
+  const { stocks, loading, error, refreshStocks } = useStockData();
   const [selectedHolding, setSelectedHolding] = useState(null);
   const [showStockDetail, setShowStockDetail] = useState(false);
   
+  const currentPortfolio = generatePortfolio(stocks);
+  
   const handleHoldingClick = (holding) => {
-    const stock = mockStocks.find(s => s.symbol === holding.symbol);
+    const stock = stocks.find(s => s.symbol === holding.symbol);
     setSelectedHolding(stock);
     setShowStockDetail(true);
   };
   
   return (
     <div className="space-y-6">
+      {/* Data Status */}
+      {(loading || error) && (
+        <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {loading && <RefreshCw className="animate-spin" size={16} />}
+              <span className="text-sm">
+                {loading ? 'Updating portfolio...' : error ? error : 'Portfolio updated'}
+              </span>
+            </div>
+            <button
+              onClick={refreshStocks}
+              disabled={loading}
+              className={`px-3 py-1 rounded text-sm ${
+                loading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Portfolio Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <motion.div
@@ -1419,11 +1447,11 @@ export const Portfolio = ({ darkMode }) => {
           className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
         >
           <h3 className="text-lg font-bold mb-2">Total Portfolio Value</h3>
-          <p className="text-3xl font-bold text-blue-600">${mockPortfolio.totalValue.toLocaleString()}</p>
+          <p className="text-3xl font-bold text-blue-600">${currentPortfolio.totalValue.toLocaleString()}</p>
           <div className="flex items-center mt-2">
             <TrendingUp className="text-green-600 mr-1" size={16} />
-            <span className="text-green-600 font-medium">
-              +${mockPortfolio.totalGain.toLocaleString()} ({mockPortfolio.totalGainPercent.toFixed(2)}%)
+            <span className={`font-medium ${currentPortfolio.totalGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {currentPortfolio.totalGain >= 0 ? '+' : ''}${currentPortfolio.totalGain.toLocaleString()} ({currentPortfolio.totalGainPercent.toFixed(2)}%)
             </span>
           </div>
         </motion.div>
@@ -1435,10 +1463,12 @@ export const Portfolio = ({ darkMode }) => {
           className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
         >
           <h3 className="text-lg font-bold mb-2">Today's Change</h3>
-          <p className="text-3xl font-bold text-green-600">+${mockPortfolio.dayChange.toFixed(2)}</p>
+          <p className={`text-3xl font-bold ${currentPortfolio.dayChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {currentPortfolio.dayChange >= 0 ? '+' : ''}${currentPortfolio.dayChange.toFixed(2)}
+          </p>
           <div className="flex items-center mt-2">
-            <span className="text-green-600 font-medium">
-              +{mockPortfolio.dayChangePercent.toFixed(2)}%
+            <span className={`font-medium ${currentPortfolio.dayChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {currentPortfolio.dayChange >= 0 ? '+' : ''}{currentPortfolio.dayChangePercent.toFixed(2)}%
             </span>
           </div>
         </motion.div>
@@ -1450,7 +1480,7 @@ export const Portfolio = ({ darkMode }) => {
           className={`p-6 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
         >
           <h3 className="text-lg font-bold mb-2">Holdings</h3>
-          <p className="text-3xl font-bold">{mockPortfolio.holdings.length}</p>
+          <p className="text-3xl font-bold">{currentPortfolio.holdings.length}</p>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-2`}>
             Active positions
           </p>
