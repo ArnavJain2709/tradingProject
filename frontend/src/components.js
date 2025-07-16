@@ -1254,19 +1254,20 @@ export const Dashboard = ({ darkMode }) => {
 
 // Trading Component
 export const Trading = ({ darkMode }) => {
+  const { stocks, loading, error, refreshStocks } = useStockData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStock, setSelectedStock] = useState(null);
   const [showStockDetail, setShowStockDetail] = useState(false);
   const [filterSector, setFilterSector] = useState('all');
   
-  const filteredStocks = mockStocks.filter(stock => {
+  const filteredStocks = stocks.filter(stock => {
     const matchesSearch = stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          stock.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSector = filterSector === 'all' || stock.sector === filterSector;
     return matchesSearch && matchesSector;
   });
   
-  const sectors = ['all', ...new Set(mockStocks.map(stock => stock.sector))];
+  const sectors = ['all', ...new Set(stocks.map(stock => stock.sector))];
   
   const handleStockClick = (stock) => {
     setSelectedStock(stock);
@@ -1275,6 +1276,30 @@ export const Trading = ({ darkMode }) => {
   
   return (
     <div className="space-y-6">
+      {/* Data Status */}
+      {(loading || error) && (
+        <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'} border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {loading && <RefreshCw className="animate-spin" size={16} />}
+              <span className="text-sm">
+                {loading ? 'Updating stock prices...' : error ? error : 'Data updated'}
+              </span>
+            </div>
+            <button
+              onClick={refreshStocks}
+              disabled={loading}
+              className={`px-3 py-1 rounded text-sm ${
+                loading 
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              Refresh
+            </button>
+          </div>
+        </div>
+      )}
       {/* Search and Filter */}
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
