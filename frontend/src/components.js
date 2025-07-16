@@ -11,7 +11,7 @@ import {
   Eye, 
   EyeOff, 
   Bell, 
-  Settings, 
+  Settings as SettingsIcon, 
   User, 
   Star, 
   BarChart3,
