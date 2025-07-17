@@ -132,13 +132,16 @@ Currently tracking: **AAPL, GOOGL, MSFT, TSLA, NVDA, AMZN, META, NFLX**
 - **Live Data**: Updates every 2 minutes (respects API rate limits)
 - **Simulated Data**: Updates every 30 seconds with realistic movements  
 - **Manual Refresh**: Available on all pages with loading indicators
-- **Intelligent Rate Limiting**: Built-in delays to prevent API abuse
+- **Intelligent Rate Limiting**: Progressive delays (500ms-2s) to prevent API abuse
+- **Mixed Data Support**: Handles partial live/simulated data scenarios
+- **429 Error Handling**: Automatic detection and response to rate limit errors
 
 #### Smart Fallback System
 - **Primary API Failure**: Automatically tries secondary API
+- **Rate Limit Detection**: Switches to simulation when APIs hit limits
 - **All APIs Down**: Switches to realistic simulation mode
 - **Network Issues**: Graceful error handling with user feedback
-- **Status Transparency**: Always shows current data source
+- **Status Transparency**: Always shows current data source (Live/Mixed/Simulated/Mock)
 
 ### 🎛️ Configuration
 

@@ -5,6 +5,42 @@ All notable changes to the Trading Project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-07-17
+
+### 🚀 API Rate Limiting & Data Management Improvements
+
+#### Intelligent Rate Limiting System
+- **Progressive Delays**: Implemented 500ms to 2s delays between API calls to prevent rate limiting
+- **Rate Limit Detection**: Automatic detection of 429 status codes and rate limit messages
+- **Smart Fallback Logic**: When rate limits hit, immediately switch to simulated data for remaining stocks
+- **Mixed Data Support**: New "Mixed Data" status for partial live/simulated data scenarios
+- **Rate Limit Tracking**: Global tracking of API call counts and rate limit status
+- **Timeout Protection**: 5-second timeouts on all API calls to prevent hanging
+
+#### Enhanced Error Handling
+- **429 Status Code Handling**: Proper handling of "Too Many Requests" responses
+- **Alpha Vantage Rate Limits**: Detection of "25 requests per day" limit messages  
+- **Comprehensive Logging**: Detailed console logging for debugging API issues
+- **Graceful Degradation**: Seamless fallback to simulated data when APIs fail
+
+#### Data Source Management
+- **Live Data Priority**: Always attempt live data first when rate limits allow
+- **Simulated Data Quality**: Realistic price movements using market patterns
+- **Status Indicators**: Enhanced badges showing "Live", "Mixed", "Simulated", or "Mock" data
+- **Error Messaging**: Clear user feedback about data source and rate limit status
+
+#### Bug Fixes
+- **NVIDIA Price Correction**: Fixed remaining static NVIDIA price (873.45 → 171.45) in fallback data
+- **API Error Recovery**: Better recovery from network timeouts and API failures
+- **Console Spam Reduction**: Optimized logging to reduce console noise
+
+### 🛠️ Developer Experience
+- **API Status Monitoring**: Real-time API status and rate limit monitoring
+- **Debugging Tools**: Enhanced console logging for troubleshooting
+- **Data Source Tracking**: Clear indication of which stocks use live vs simulated data
+
+---
+
 ## [2.1.0] - 2025-07-17
 
 ### 🔐 Security Enhancements
