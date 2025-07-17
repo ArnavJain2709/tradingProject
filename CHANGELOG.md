@@ -223,7 +223,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-07-16
 
 ### Initial Release
-- Basic Trading 212 clone interface
+- Basic trading platform interface
 - Static mock data for stocks
 - Portfolio management features
 - Dark/light mode toggle

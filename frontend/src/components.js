@@ -875,7 +875,7 @@ export const Header = ({ darkMode, toggleDarkMode, sidebarOpen, setSidebarOpen }
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               <BarChart3 size={20} className="text-white" />
             </div>
-            <h1 className="text-xl font-bold text-blue-600">Trading 212</h1>
+            <h1 className="text-xl font-bold text-blue-600">Trading Hub</h1>
           </div>
         </div>
         

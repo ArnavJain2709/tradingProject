@@ -1,6 +1,6 @@
-# Trading 212 Clone 📈
+# Advanced Trading Platform 📈
 
-A comprehensive replica of the Trading 212 platform built with React, featuring **real-time stock prices**, intelligent API fallbacks, portfolio management, and professional trading interface.
+A comprehensive trading platform built with React, featuring **real-time stock prices**, intelligent API fallbacks, portfolio management, and professional trading interface.
 
 ## 🚀 Features
 
@@ -19,7 +19,7 @@ A comprehensive replica of the Trading 212 platform built with React, featuring 
 - **Market News**: Latest financial news and market updates
 
 ### Professional UI/UX
-- **Trading 212 Design**: Exact replica of the original platform
+- **Professional Interface**: Modern and intuitive trading platform design
 - **Dark/Light Mode**: Seamless theme switching
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Smooth Animations**: Framer Motion for professional interactions
@@ -45,7 +45,7 @@ A comprehensive replica of the Trading 212 platform built with React, featuring 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd trading-212-clone
+   cd trading-platform
    ```
 
 2. **Install dependencies**
@@ -189,7 +189,7 @@ const baseHoldings = [
 ## 🎨 UI Customization
 
 ### Theme Colors
-The app uses Trading 212's blue color scheme. To customize:
+The app uses a modern blue color scheme. To customize:
 
 ```javascript
 // In tailwind.config.js
@@ -197,7 +197,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#3B82F6',    // Trading 212 blue
+        primary: '#3B82F6',    // Modern blue
         secondary: '#10B981',  // Success green
         danger: '#EF4444',     // Error red
       }
@@ -319,7 +319,7 @@ yarn build
 
 ## 📄 License
 
-This project is for educational purposes only. Not affiliated with Trading 212.
+This project is for educational purposes only and demonstrates modern web development practices for trading applications.
 
 ## 🆘 Support
 
