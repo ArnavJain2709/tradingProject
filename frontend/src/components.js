@@ -86,10 +86,10 @@ ChartJS.register(
 // 2. Financial Modeling Prep: https://financialmodelingprep.com/developer/docs (250 requests/day)
 // 3. Polygon.io: https://polygon.io/ (5 requests/minute free)
 
-const FINNHUB_API_KEY = 'demo'; // Get free key from https://finnhub.io/
+const FINNHUB_API_KEY = process.env.REACT_APP_FINNHUB_API_KEY || 'demo'; // Get free key from https://finnhub.io/
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
 
-const ALPHA_VANTAGE_API_KEY = 'demo'; // Get free key from https://www.alphavantage.co/support/#api-key
+const ALPHA_VANTAGE_API_KEY = process.env.REACT_APP_ALPHA_VANTAGE_API_KEY || 'demo'; // Get free key from https://www.alphavantage.co/support/#api-key
 const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 
 // Stock symbols we want to track
