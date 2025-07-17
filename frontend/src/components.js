@@ -102,7 +102,9 @@ const fetchRealStockData = async (symbol) => {
   // Try Finnhub API first (no CORS issues)
   try {
     console.log(`📡 Trying Finnhub API for ${symbol}...`);
-    const response = await axios.get(`${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`);
+    const response = await axios.get(`${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`, {
+      timeout: 5000 // 5 second timeout
+    });
     const data = response.data;
     
     console.log(`📊 Finnhub response for ${symbol}:`, data);
@@ -136,45 +138,68 @@ const fetchRealStockData = async (symbol) => {
     }
   } catch (error) {
     console.log(`❌ Finnhub API failed for ${symbol}:`, error.message);
+    
+    // Check for rate limiting
+    if (error.response && error.response.status === 429) {
+      console.log(`🚫 Finnhub rate limit hit for ${symbol}`);
+      rateLimitHit = true;
+      // Don't try Alpha Vantage if we're hitting rate limits
+      const simulatedData = generateRealisticStockData(symbol);
+      simulatedData.dataSource = 'simulated';
+      return simulatedData;
+    }
   }
 
-  // Fallback: Try Alpha Vantage API
-  try {
-    console.log(`📡 Trying Alpha Vantage API for ${symbol}...`);
-    const response = await axios.get(`${ALPHA_VANTAGE_BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`);
-    const data = response.data;
-    
-    console.log(`📊 Alpha Vantage response for ${symbol}:`, data);
-    
-    if (data && data['Global Quote'] && data['Global Quote']['05. price']) {
-      const quote = data['Global Quote'];
-      const currentPrice = parseFloat(quote['05. price']);
-      const change = parseFloat(quote['09. change']);
-      const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+  // Only try Alpha Vantage if we haven't hit rate limits
+  if (!rateLimitHit) {
+    try {
+      console.log(`📡 Trying Alpha Vantage API for ${symbol}...`);
+      const response = await axios.get(`${ALPHA_VANTAGE_BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`, {
+        timeout: 5000 // 5 second timeout
+      });
+      const data = response.data;
       
-      console.log(`✅ Alpha Vantage success for ${symbol}: $${currentPrice}`);
+      console.log(`📊 Alpha Vantage response for ${symbol}:`, data);
       
-      return {
-        symbol: symbol,
-        name: getCompanyName(symbol),
-        price: currentPrice,
-        change: change,
-        changePercent: changePercent,
-        volume: parseInt(quote['06. volume']) || Math.floor(Math.random() * 50000000) + 10000000,
-        marketCap: getMarketCap(symbol),
-        high: parseFloat(quote['03. high']),
-        low: parseFloat(quote['04. low']),
-        open: parseFloat(quote['02. open']),
-        close: currentPrice,
-        pe: getPERatio(symbol),
-        sector: getSectorForSymbol(symbol),
-        dataSource: 'live' // Mark as live data
-      };
-    } else {
-      console.log(`❌ Alpha Vantage returned invalid data for ${symbol}:`, data);
+      // Check for rate limit message
+      if (data.Information && data.Information.includes('rate limit')) {
+        console.log(`🚫 Alpha Vantage rate limit hit: ${data.Information}`);
+        rateLimitHit = true;
+        const simulatedData = generateRealisticStockData(symbol);
+        simulatedData.dataSource = 'simulated';
+        return simulatedData;
+      }
+      
+      if (data && data['Global Quote'] && data['Global Quote']['05. price']) {
+        const quote = data['Global Quote'];
+        const currentPrice = parseFloat(quote['05. price']);
+        const change = parseFloat(quote['09. change']);
+        const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+        
+        console.log(`✅ Alpha Vantage success for ${symbol}: $${currentPrice}`);
+        
+        return {
+          symbol: symbol,
+          name: getCompanyName(symbol),
+          price: currentPrice,
+          change: change,
+          changePercent: changePercent,
+          volume: parseInt(quote['06. volume']) || Math.floor(Math.random() * 50000000) + 10000000,
+          marketCap: getMarketCap(symbol),
+          high: parseFloat(quote['03. high']),
+          low: parseFloat(quote['04. low']),
+          open: parseFloat(quote['02. open']),
+          close: currentPrice,
+          pe: getPERatio(symbol),
+          sector: getSectorForSymbol(symbol),
+          dataSource: 'live' // Mark as live data
+        };
+      } else {
+        console.log(`❌ Alpha Vantage returned invalid data for ${symbol}:`, data);
+      }
+    } catch (error) {
+      console.log(`❌ Alpha Vantage API failed for ${symbol}:`, error.message);
     }
-  } catch (error) {
-    console.log(`❌ Alpha Vantage API failed for ${symbol}:`, error.message);
   }
 
   // Final fallback: Generate realistic simulated data based on real market patterns
@@ -287,36 +312,87 @@ const getSectorForSymbol = (symbol) => {
   return sectors[symbol] || 'Technology';
 };
 
-// Function to fetch all stock data with improved error handling
+// Rate limiting tracking
+let lastApiCall = 0;
+let apiCallCount = 0;
+let rateLimitHit = false;
+
+// Function to fetch all stock data with improved error handling and rate limiting
 const fetchAllStockData = async () => {
-  console.log('Fetching real-time stock data...');
+  console.log('🚀 Fetching real-time stock data...');
+  
+  // Reset rate limit tracking if it's been more than an hour
+  const now = Date.now();
+  if (now - lastApiCall > 3600000) { // 1 hour
+    apiCallCount = 0;
+    rateLimitHit = false;
+    console.log('📊 Rate limit counters reset');
+  }
   
   try {
-    // Fetch data for all symbols with some delay to avoid rate limiting
     const results = [];
+    let liveDataCount = 0;
+    
+    // If we've hit rate limits, use simulated data for all
+    if (rateLimitHit) {
+      console.log('⚠️ Rate limit previously hit, using simulated data for all stocks');
+      for (const symbol of STOCK_SYMBOLS) {
+        const simulatedData = generateRealisticStockData(symbol);
+        simulatedData.dataSource = 'simulated';
+        results.push(simulatedData);
+      }
+      return results;
+    }
     
     for (let i = 0; i < STOCK_SYMBOLS.length; i++) {
       const symbol = STOCK_SYMBOLS[i];
+      
       try {
-        const stockData = await fetchRealStockData(symbol);
-        if (stockData) {
-          results.push(stockData);
+        // Add progressive delay to avoid rate limiting
+        const delay = Math.min(500 + (i * 300), 2000); // 500ms to 2s delay
+        
+        if (i > 0) {
+          console.log(`⏳ Waiting ${delay}ms before next API call...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
         
-        // Add small delay between requests to avoid rate limiting
-        if (i < STOCK_SYMBOLS.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 200));
+        const stockData = await fetchRealStockData(symbol);
+        
+        if (stockData && stockData.dataSource === 'live') {
+          results.push(stockData);
+          liveDataCount++;
+          apiCallCount++;
+          lastApiCall = Date.now();
+          console.log(`✅ Live data for ${symbol} (${liveDataCount}/${STOCK_SYMBOLS.length})`);
+        } else {
+          // Use simulated data if API failed
+          const simulatedData = generateRealisticStockData(symbol);
+          simulatedData.dataSource = 'simulated';
+          results.push(simulatedData);
+          console.log(`🎭 Simulated data for ${symbol}`);
         }
+        
       } catch (error) {
-        console.error(`Failed to fetch data for ${symbol}:`, error);
+        console.error(`❌ Failed to fetch data for ${symbol}:`, error);
+        
+        // Check if it's a rate limit error
+        if (error.message.includes('429') || error.message.includes('rate limit')) {
+          rateLimitHit = true;
+          console.log('🚫 Rate limit detected, switching to simulated data for remaining stocks');
+        }
+        
         // Add fallback data for this symbol
-        results.push(generateRealisticStockData(symbol));
+        const simulatedData = generateRealisticStockData(symbol);
+        simulatedData.dataSource = 'simulated';
+        results.push(simulatedData);
       }
     }
     
+    console.log(`📈 Data fetch complete: ${liveDataCount} live, ${STOCK_SYMBOLS.length - liveDataCount} simulated`);
     return results.length > 0 ? results : null;
+    
   } catch (error) {
-    console.error('Error in fetchAllStockData:', error);
+    console.error('❌ Error in fetchAllStockData:', error);
     return null;
   }
 };
@@ -386,15 +462,15 @@ const fallbackMockStocks = [
   {
     symbol: 'NVDA',
     name: 'NVIDIA Corp.',
-    price: 873.45,
-    change: 23.67,
-    changePercent: 2.79,
+    price: 171.45,
+    change: 0.75,
+    changePercent: 0.44,
     volume: 45123987,
     marketCap: '2.15T',
-    high: 878.90,
-    low: 865.23,
-    open: 868.12,
-    close: 873.45,
+    high: 172.90,
+    low: 169.23,
+    open: 170.12,
+    close: 171.45,
     pe: 72.1,
     sector: 'Technology'
   },
@@ -469,9 +545,23 @@ const useStockData = () => {
         setStocks(realData);
         globalStockData = realData;
         setLastUpdated(new Date());
-        setDataSource('live');
-        setError(null);
-        console.log('Successfully fetched real stock data:', realData.length, 'stocks');
+        
+        // Determine overall data source
+        const liveCount = realData.filter(stock => stock.dataSource === 'live').length;
+        const simulatedCount = realData.length - liveCount;
+        
+        if (liveCount > 0 && simulatedCount > 0) {
+          setDataSource('mixed');
+          setError(`Mixed data: ${liveCount} live, ${simulatedCount} simulated (API rate limited)`);
+        } else if (liveCount > 0) {
+          setDataSource('live');
+          setError(null);
+        } else {
+          setDataSource('simulated');
+          setError('Using simulated data - API rate limited');
+        }
+        
+        console.log(`📊 Stock data updated: ${liveCount} live, ${simulatedCount} simulated`);
       } else {
         // Generate realistic simulated data instead of using static mock data
         const simulatedData = STOCK_SYMBOLS.map(symbol => generateRealisticStockData(symbol));
@@ -1212,11 +1302,13 @@ export const Dashboard = ({ darkMode }) => {
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                 dataSource === 'live' 
                   ? 'bg-green-100 text-green-800' 
-                  : dataSource === 'simulated' 
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-gray-100 text-gray-800'
+                  : dataSource === 'mixed'
+                    ? 'bg-orange-100 text-orange-800'
+                    : dataSource === 'simulated' 
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-800'
               }`}>
-                {dataSource === 'live' ? 'Live Data' : dataSource === 'simulated' ? 'Simulated' : 'Mock'}
+                {dataSource === 'live' ? 'Live Data' : dataSource === 'mixed' ? 'Mixed Data' : dataSource === 'simulated' ? 'Simulated' : 'Mock'}
               </span>
               {lastUpdated && (
                 <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
