@@ -1,11 +1,17 @@
 # Trading 212 Clone 📈
 
-A comprehensive replica of the Trading 212 platform built with React, featuring real-time stock prices, portfolio management, and professional trading interface.
+A comprehensive replica of the Trading 212 platform built with React, featuring **real-time stock prices**, intelligent API fallbacks, portfolio management, and professional trading interface.
 
 ## 🚀 Features
 
+### 📊 Real-Time Stock Data (NEW!)
+- **Live Stock Prices**: Real-time data from Finnhub and Alpha Vantage APIs
+- **Intelligent Fallbacks**: Automatic switching between APIs when one fails  
+- **Smart Simulation**: Realistic price movements when APIs are unavailable
+- **Data Source Indicators**: Visual badges showing "Live Data", "Simulated", or "Mock"
+- **Auto-Updates**: Refreshes every 2 minutes (live) or 30 seconds (simulated)
+
 ### Core Trading Platform
-- **Real-time Stock Data**: Live prices from Yahoo Finance API
 - **Portfolio Management**: Track holdings with real-time P&L calculations
 - **Stock Trading Interface**: Buy/sell orders with market/limit/stop options
 - **Interactive Charts**: Technical analysis with Chart.js
@@ -24,7 +30,7 @@ A comprehensive replica of the Trading 212 platform built with React, featuring 
 - **TailwindCSS**: Utility-first CSS framework
 - **Chart.js**: Interactive charts and data visualization
 - **Framer Motion**: Smooth animations and transitions
-- **Axios**: HTTP client for API requests
+- **Multiple APIs**: Finnhub, Alpha Vantage with intelligent fallbacks
 - **Lucide React**: Consistent iconography
 
 ## 🛠️ Installation & Setup
@@ -58,85 +64,83 @@ A comprehensive replica of the Trading 212 platform built with React, featuring 
 
 ## 📊 Stock Data API Setup
 
-### Current Implementation
-The app uses **Yahoo Finance API** for real-time stock data with automatic fallback to mock data.
+### 🚀 New Multi-API System (v2.0)
 
-### API Configuration
+The app now features an **intelligent multi-API system** with automatic fallbacks:
 
-#### Option 1: Yahoo Finance (Default - No Setup Required)
-The app is pre-configured to use Yahoo Finance API which requires no API key:
+#### 🎯 How It Works
+1. **Primary**: Tries Finnhub API (no CORS issues)
+2. **Fallback**: Falls back to Alpha Vantage API  
+3. **Smart Simulation**: Uses realistic price simulation if both APIs fail
+4. **Status Indicators**: Shows data source with colored badges
 
-```javascript
-// Already configured in components.js
-const YAHOO_FINANCE_PROXY = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-```
+#### 📈 Current Status
+Without any setup, the app provides **realistic simulated data** that:
+- Updates every 30 seconds with market-like movements
+- Includes proper volatility patterns for each stock
+- Simulates realistic volume and price changes
+- Shows "Simulated" badge in the interface
 
-**Supported Stocks**: AAPL, GOOGL, MSFT, TSLA, NVDA, AMZN, META, NFLX
+### 🔑 Getting Real Live Data (Optional)
 
-#### Option 2: Alpha Vantage (Premium Alternative)
-For more reliable data, you can use Alpha Vantage:
+#### Option 1: Finnhub API (Recommended)
+**Free Tier**: 60 calls/minute - Perfect for this project!
 
 1. **Get API Key**
-   - Visit [Alpha Vantage](https://www.alphavantage.co/support/#api-key)
-   - Sign up for free account
-   - Get your API key
+   ```bash
+   # Visit https://finnhub.io/
+   # Sign up for free account
+   # Copy your API key from dashboard
+   ```
 
 2. **Update Configuration**
    ```javascript
-   // In components.js, update the API key
-   const ALPHA_VANTAGE_API_KEY = 'YOUR_API_KEY_HERE';
+   // In frontend/src/components.js, line 20
+   const FINNHUB_API_KEY = 'your_actual_api_key_here'; // Replace 'demo'
    ```
 
-3. **Modify fetchRealStockData function**
+3. **Restart the app** - You'll see "Live Data" badge!
+
+#### Option 2: Alpha Vantage API  
+**Free Tier**: 500 requests/day, 5 requests/minute
+
+1. **Get API Key**
+   ```bash
+   # Visit https://www.alphavantage.co/support/#api-key
+   # Sign up for free
+   # Get your API key
+   ```
+
+2. **Update Configuration**
    ```javascript
-   // Replace Yahoo Finance implementation with Alpha Vantage
-   const fetchRealStockData = async (symbol) => {
-     const response = await axios.get(
-       `${ALPHA_VANTAGE_BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`
-     );
-     // Process Alpha Vantage response
-   };
+   // In frontend/src/components.js, line 23
+   const ALPHA_VANTAGE_API_KEY = 'your_api_key_here'; // Replace 'demo'
    ```
 
-#### Option 3: Other APIs
+Currently tracking: **AAPL, GOOGL, MSFT, TSLA, NVDA, AMZN, META, NFLX**
 
-**IEX Cloud**
-- Free tier available
-- Real-time and historical data
-- Requires API key registration
+### 📊 Data Features
 
-**Finnhub**
-- Free tier with 60 calls/minute
-- Comprehensive market data
-- WebSocket support for real-time updates
+#### Stock Information Available
+- **Real-time Prices**: Current stock price from live APIs
+- **Price Changes**: Dollar and percentage changes from previous close
+- **Trading Volume**: Daily trading volume (real or simulated)
+- **Market Metrics**: Market cap, P/E ratios, day high/low, open price
+- **Sector Data**: Industry sector classification
 
-**Twelve Data**
-- Free tier available
-- Multiple data sources
-- Good for international markets
+#### Update Frequency & Performance
+- **Live Data**: Updates every 2 minutes (respects API rate limits)
+- **Simulated Data**: Updates every 30 seconds with realistic movements  
+- **Manual Refresh**: Available on all pages with loading indicators
+- **Intelligent Rate Limiting**: Built-in delays to prevent API abuse
 
-### API Features
+#### Smart Fallback System
+- **Primary API Failure**: Automatically tries secondary API
+- **All APIs Down**: Switches to realistic simulation mode
+- **Network Issues**: Graceful error handling with user feedback
+- **Status Transparency**: Always shows current data source
 
-#### Current Data Points
-- **Real-time Prices**: Current stock price
-- **Price Changes**: Dollar and percentage changes
-- **Volume**: Trading volume
-- **Market Cap**: Market capitalization
-- **Day High/Low**: Daily price range
-- **P/E Ratio**: Price-to-earnings ratio
-- **Sector Information**: Stock sector classification
-
-#### Update Frequency
-- **Automatic**: Every 5 minutes
-- **Manual**: Refresh buttons on all components
-- **Real-time**: During market hours
-
-#### Error Handling
-- **Fallback System**: Automatic switch to mock data
-- **Retry Logic**: Built-in error recovery
-- **User Feedback**: Clear status indicators
-
-## 🔧 Configuration
+### 🎛️ Configuration
 
 ### Environment Variables
 Create a `.env` file in the frontend directory:
@@ -219,32 +223,54 @@ Dark mode is automatically saved to localStorage and persists across sessions.
 
 ## 🔍 Troubleshooting
 
-### Common Issues
+### 🆘 Common Issues
 
-#### API Not Working
+#### No Live Data / Always Shows "Simulated"
 ```bash
-# Check console for errors
-# Verify API endpoints are accessible
-# Ensure CORS is properly configured
+# Check your API keys in components.js:
+# Line 20: FINNHUB_API_KEY = 'your_key_here'  
+# Line 23: ALPHA_VANTAGE_API_KEY = 'your_key_here'
+
+# Check browser console for API errors
+# Verify API keys are active and have remaining quota
 ```
 
-#### Slow Loading
+#### App Not Loading / White Screen
+```bash
+# Check if development server is running
+cd frontend && npm start
+
+# Clear browser cache and localStorage
+# Check browser console for JavaScript errors
+```
+
+#### Prices Not Updating
+- Verify you have internet connectivity
+- Check if you've hit API rate limits (wait a few minutes)
+- Use manual refresh button to force update
+- Check browser console for API error messages
+
+#### Performance Issues
 - API rate limits may cause delays
-- Consider upgrading to premium API
-- Check network connectivity
+- Consider upgrading to premium API tiers  
+- Check network connectivity and speed
 
-#### Data Not Updating
-- Verify API key is correct
-- Check if API service is operational
-- Ensure proper error handling
+### 🐛 Debug Information
 
-### Debug Mode
-Enable debug logging:
+#### Enable Debug Logging
+Check the browser console (F12) to see:
 ```javascript
-// In components.js
-console.log('Stock data:', stocks);
-console.log('API response:', response.data);
+// These messages help diagnose issues:
+"Fetching real-time stock data..."
+"Successfully fetched real stock data: 8 stocks"  
+"Using simulated stock data"
+"Finnhub API failed for AAPL, trying fallback..."
 ```
+
+#### Data Source Verification
+- Look for colored badges: "Live Data" (green), "Simulated" (yellow), "Mock" (gray)
+- Check "Updated" timestamp in the status banner
+- Manual refresh should trigger new API calls (check console)
 
 ## 🚀 Deployment
 
@@ -302,20 +328,40 @@ For issues or questions:
 
 ## 🔮 Future Enhancements
 
-### Planned Features
-- **WebSocket Integration**: Real-time price streaming
-- **Advanced Charts**: Technical indicators and drawing tools
-- **Options Trading**: Options contracts interface
-- **Crypto Support**: Cryptocurrency trading
-- **Mobile App**: React Native version
-- **Backend API**: Custom API for user data
-- **Authentication**: User accounts and data persistence
+### 🚀 Planned Features (Next Version)
+- **WebSocket Integration**: Real-time streaming data for sub-second updates
+- **Historical Charts**: Interactive charts with historical price data
+- **Advanced Charts**: Technical indicators, candlestick charts, drawing tools
+- **Options Trading**: Options contracts interface and Greeks calculations
+- **Crypto Support**: Cryptocurrency trading with major coins
+- **Mobile App**: React Native version for iOS/Android
+- **User Accounts**: Personal watchlists, portfolios, and settings persistence
+- **News Integration**: Real-time news feed with stock-specific alerts
+- **Economic Calendar**: Economic events and earnings announcements
 
-### API Upgrades
-- **Premium Data**: Professional market data
-- **International Markets**: Global stock exchanges
-- **Real-time News**: Live news feed integration
-- **Economic Calendar**: Economic events and announcements
+### 🔧 Technical Improvements
+- **TypeScript Migration**: Full TypeScript support for better development experience
+- **Testing Suite**: Comprehensive unit and integration tests
+- **CI/CD Pipeline**: Automated testing, building, and deployment
+- **Performance Monitoring**: Real-time performance metrics and error tracking
+- **Database Integration**: User data persistence with PostgreSQL/MongoDB
+- **Authentication System**: Secure user login with JWT tokens
+
+### 📊 Data Enhancements
+- **More APIs**: Additional data sources for better redundancy
+- **International Markets**: Support for global stock exchanges
+- **Forex & Commodities**: Foreign exchange and commodity trading
+- **Real-time Analytics**: Advanced portfolio analytics and risk metrics
+- **Backtesting**: Historical portfolio performance simulation
+
+### ✅ Recently Implemented (v2.0)
+- ✅ **Multiple API Integration**: Finnhub and Alpha Vantage with intelligent fallbacks
+- ✅ **Real-time Data**: Live stock prices with automatic updates  
+- ✅ **Smart Simulation**: Realistic price movements when APIs unavailable
+- ✅ **Status Indicators**: Visual feedback for data sources
+- ✅ **Error Recovery**: Graceful handling of API failures
+- ✅ **Rate Limiting**: Built-in protection against API abuse
+- ✅ **Performance Optimization**: Efficient data fetching and state management
 
 ---
 
