@@ -5,6 +5,30 @@ All notable changes to the Trading Project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-07-17
+
+### 🔐 Security Enhancements
+
+#### API Key Security Implementation
+- **Environment Variables**: Moved API keys from hardcoded values to secure environment variables
+- **Git Security**: Added comprehensive .gitignore to prevent committing sensitive files (.env, *.key, *.pem)
+- **Developer Template**: Created .env.example file with setup instructions and placeholder values
+- **Repository Safety**: Ensured API keys are never committed to Git history or public repositories
+- **Team Collaboration**: Safe code sharing without exposing sensitive credentials
+
+#### Files Added/Modified
+- **`.env`**: Secure storage for actual API keys (git-ignored)
+- **`.env.example`**: Template file for team setup (safe to commit)
+- **`.gitignore`**: Comprehensive exclusion rules for sensitive files
+- **`components.js`**: Updated to use `process.env.REACT_APP_*` instead of hardcoded keys
+
+### 🛠️ Developer Experience
+- **Easy Setup**: New developers can copy .env.example to .env and add their keys
+- **No Secrets in Code**: Clean codebase with no sensitive data exposure
+- **Production Ready**: Proper environment variable handling for deployment
+
+---
+
 ## [2.0.0] - 2025-07-17
 
 ### 🚀 Major Features Added
@@ -138,8 +162,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🔐 Security
 
 #### API Security
-- **Key Management**: Secure API key handling
-- **Environment Variables**: Proper secrets management
+- **Environment Variables**: Moved API keys from hardcoded values to secure environment variables
+- **Git Security**: Added comprehensive .gitignore to prevent committing sensitive files
+- **Key Management**: Secure API key handling with .env files and .env.example template
+- **Secrets Protection**: API keys never committed to repository, safe for public repositories
+- **Developer Safety**: .env.example provides setup template without exposing real keys
 - **Rate Limiting**: Built-in protection against API abuse
 
 ### 🚀 Future Roadmap
