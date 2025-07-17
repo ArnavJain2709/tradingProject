@@ -97,16 +97,23 @@ const STOCK_SYMBOLS = ['AAPL', 'GOOGL', 'MSFT', 'TSLA', 'NVDA', 'AMZN', 'META', 
 
 // Function to fetch real stock data using multiple APIs with fallbacks
 const fetchRealStockData = async (symbol) => {
+  console.log(`🔍 Fetching data for ${symbol}...`);
+  
   // Try Finnhub API first (no CORS issues)
   try {
+    console.log(`📡 Trying Finnhub API for ${symbol}...`);
     const response = await axios.get(`${FINNHUB_BASE_URL}/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`);
     const data = response.data;
+    
+    console.log(`📊 Finnhub response for ${symbol}:`, data);
     
     if (data && data.c && data.c > 0) {
       const currentPrice = data.c; // Current price
       const previousClose = data.pc; // Previous close
       const change = currentPrice - previousClose;
       const changePercent = (change / previousClose) * 100;
+      
+      console.log(`✅ Finnhub success for ${symbol}: $${currentPrice}`);
       
       return {
         symbol: symbol,
@@ -121,23 +128,31 @@ const fetchRealStockData = async (symbol) => {
         open: data.o || previousClose, // Open price
         close: currentPrice,
         pe: getPERatio(symbol),
-        sector: getSectorForSymbol(symbol)
+        sector: getSectorForSymbol(symbol),
+        dataSource: 'live' // Mark as live data
       };
+    } else {
+      console.log(`❌ Finnhub returned invalid data for ${symbol}:`, data);
     }
   } catch (error) {
-    console.log(`Finnhub API failed for ${symbol}, trying fallback...`);
+    console.log(`❌ Finnhub API failed for ${symbol}:`, error.message);
   }
 
   // Fallback: Try Alpha Vantage API
   try {
+    console.log(`📡 Trying Alpha Vantage API for ${symbol}...`);
     const response = await axios.get(`${ALPHA_VANTAGE_BASE_URL}?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`);
     const data = response.data;
+    
+    console.log(`📊 Alpha Vantage response for ${symbol}:`, data);
     
     if (data && data['Global Quote'] && data['Global Quote']['05. price']) {
       const quote = data['Global Quote'];
       const currentPrice = parseFloat(quote['05. price']);
       const change = parseFloat(quote['09. change']);
       const changePercent = parseFloat(quote['10. change percent'].replace('%', ''));
+      
+      console.log(`✅ Alpha Vantage success for ${symbol}: $${currentPrice}`);
       
       return {
         symbol: symbol,
@@ -152,15 +167,21 @@ const fetchRealStockData = async (symbol) => {
         open: parseFloat(quote['02. open']),
         close: currentPrice,
         pe: getPERatio(symbol),
-        sector: getSectorForSymbol(symbol)
+        sector: getSectorForSymbol(symbol),
+        dataSource: 'live' // Mark as live data
       };
+    } else {
+      console.log(`❌ Alpha Vantage returned invalid data for ${symbol}:`, data);
     }
   } catch (error) {
-    console.log(`Alpha Vantage API failed for ${symbol}, using simulated data...`);
+    console.log(`❌ Alpha Vantage API failed for ${symbol}:`, error.message);
   }
 
   // Final fallback: Generate realistic simulated data based on real market patterns
-  return generateRealisticStockData(symbol);
+  console.log(`🎭 Using simulated data for ${symbol}`);
+  const simulatedData = generateRealisticStockData(symbol);
+  simulatedData.dataSource = 'simulated';
+  return simulatedData;
 };
 
 // Helper function to get company names
@@ -210,15 +231,16 @@ const getPERatio = (symbol) => {
 
 // Function to generate realistic stock data with market-like fluctuations
 const generateRealisticStockData = (symbol) => {
+  // Updated with more realistic prices as of July 2025
   const baseData = {
-    'AAPL': { price: 193.42, volatility: 0.02 },
-    'GOOGL': { price: 142.56, volatility: 0.025 },
-    'MSFT': { price: 378.85, volatility: 0.018 },
-    'TSLA': { price: 248.73, volatility: 0.04 },
-    'NVDA': { price: 873.45, volatility: 0.035 },
-    'AMZN': { price: 145.23, volatility: 0.022 },
-    'META': { price: 501.23, volatility: 0.03 },
-    'NFLX': { price: 645.78, volatility: 0.028 }
+    'AAPL': { price: 194.27, volatility: 0.02 },
+    'GOOGL': { price: 138.21, volatility: 0.025 },
+    'MSFT': { price: 371.82, volatility: 0.018 },
+    'TSLA': { price: 234.86, volatility: 0.04 },
+    'NVDA': { price: 171.45, volatility: 0.035 }, // Fixed: was 873.45, now realistic
+    'AMZN': { price: 143.65, volatility: 0.022 },
+    'META': { price: 486.91, volatility: 0.03 },
+    'NFLX': { price: 612.78, volatility: 0.028 }
   };
 
   const base = baseData[symbol] || { price: 100, volatility: 0.02 };
