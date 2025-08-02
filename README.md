@@ -1,4 +1,4 @@
-# Advanced Trading Platform 📈
+# Trading Platform 📈
 
 A comprehensive trading platform built with React, featuring **real-time stock prices**, intelligent API fallbacks, portfolio management, and professional trading interface.
 
